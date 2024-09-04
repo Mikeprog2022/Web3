@@ -1,0 +1,58 @@
+java 2.3.0
+js 2.4.0
+go 2.4.0
+swift 5.5
+
+Wallet => Account ID, private key
+		|
+		v
+Application / Hedera SDk => Node addresses, MirrorNode Address
+			|								|
+			v								v
+    gRPC =>	Hedera Consensus Node			Hedera Mirror Node => gRPC(HCS pub/sub)
+	
+Client sending same transaction to multiple nodes
+- Increases theh chance of faster consensus time
+- Protecting against bad nodes
+
+Client SDK selects best candidate node to use next by default. Spreads load across nodes and dealing with down or flapping nodes.
+
+Multiple clients can send transactions simultaneously to the same node.
+Nodes have their own throttles to prevent the chance that transactions fail after consensus due to throttles.
+
+Browsers have rules on which hosts a page can send traffic to.
+Browser clients use WebGRPC proxy to communicate with nodes.
+
+Hedera Client
+Build a client to connect to either Mainnet, testnet and previewnet.
+Mirror node client is configured to the corresponding network mirror node for a predefined network.
+Default mainnet mirror node connection is to the whitelisted mirror node
+
+Creating a client:
+- Prepare operator id and operator private key
+- Instantiate Client object
+- Set account id and key used for signing
+
+Hedera Account
+- Required to interact with hedera network services
+
+Ways of Account Creation
+- AccountCreateTransaction
+- Transfer Hbar to an account 
+
+Create a Hedera ED25519
+-> Instantiate client object
+-> Create a new keypair
+-> Instantiate and submit a transaction
+-> Query transaction to confirm that its successful
+-> Get account if from the receipt
+
+Get Account Balance
+- Submit a balance query => AccountBalanceQuery clientObject
+
+Transfer Hbar
+- Create a transfer transaction
+- Sum of amounts in transaction = 0
+
+Allowance
+Allow other accounts to transfer HBAR
