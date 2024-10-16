@@ -86,7 +86,7 @@ Auto Renew Period = - Initial topic lifetime and amount of time to attempt to ex
 
 Submit Message:
 Subscribe message for a topic.(Sent to Consensus node)
-new TopicMessageSubmitTransaction({topicId: x, message: y})
+- new TopicMessageSubmitTransaction({topicId: x, message: y})
 
 Methods:
 setTopicId(<l=topicId>), type=TopicId, required
@@ -108,7 +108,7 @@ Hedera Token service
 
 Create Fungible Token
 - Create a txn = new TokenCreateTransaction()
-- Set name*, symbol*, type(nft, fungible), Decimal(0 for nft), InitialSupply = setTokenName("nameIdentifier").setTokenSymbol("nameShortForm").setTokenType(TokenType.FungibleCommon).setDecimals().setInitialSupply()
+- Set name*, symbol*, type(nft, fungible*def), Decimal(0 for nft), InitialSupply = setTokenName("nameIdentifier").setTokenSymbol("nameShortForm").setTokenType(TokenType.FungibleCommon).setDecimals().setInitialSupply()
 - Set treasuryAccountId*, account that holds initial supply = setTreasuryAccountId()
 - set supplyType(finite, infinite(TokenSupplyType.Infinite))
 - set supplyKey, key used for minting tokens
@@ -131,3 +131,51 @@ Token Fee
 	-- Fee collector accountId defined in the royalty fee schedule will receive the fee each time.
 	-- The fee charged is a fraction of the value exchanged for the NFT.
 	-- If there's no value exchanged for the NFT, a fallback fee is used to charge the receiving account.
+
+Get Token Info
+- new TokenInfoQuery() -> setTokenId() -> execute(client)
+
+Get Token Balances / info of a particular token
+- new AccountBalanceQuery() -> setAccountId() -> execute(client)
+
+Mint Fungible Tokens
+- Set Token ID
+- Set amount
+- Sign a txn with the supply key
+
+	- new TokenMintTransaction().setTokenId().setAmount().freezeWith(client).sign(supplyKey).execute(client)//submit txn to a hedera network
+
+Burn Fungible Tokens = Same as mint but with new TokenBurnTransaction()
+
+Associate Token Transaction = Allows a wallet to receive an nft or a ft
+ - Set Account ID
+ - Set Token IDs []
+ - Sign with the private key of the account that's associated to a token
+
+	- new TokenAssociateTransaction().setAccountId().setTokenIds([]).freezeWith().sign(accountKey).execute(client)
+
+Transfer Fungible Tokens
+- new TransferTransaction().addTokenTransfer(tokenId, fromAccountId, -amount).addTokenTransfer(tokenId, toAccountId, amount).freezeWith(client).sign(senderAccountPrivateKey).execute(client)
+
+Freeze / Unfreeze Accounts
+- new TokenFreezeTransaction().setAccountId().setTokenId().freezeWith(client).sign(tokenFreezeKey).execute(client)
+
+Enable KYC flapping
+- newTokenGrantKycTransaction().setAccountId().setTokenId().freezeWith(client).sign(tokenKycPrivateKey).execute(client)
+
+Pause / Unpause token
+-  newTokenPauseTransaction().setTokenId().freezeWith(client).sign(pauseKey).execute(client)
+
+Wipe Tokens
+- new TokenWipeTransaction().setAccountId().setTokenId().setAmount().freezeWith(client).sign(payerAccountPrivateKey).sign(tokenWipePrivateKey).execute(client)//submit txn to a hedera network
+
+Create NFT
+- Sign the txn with the treasury key
+- Mint the nft
+	-- NFT's use InterPlanetary File System(IPFS), a hypermedia protocol and peer to peer network for storing and sharing data and files. Doesnt require a host server like HTTP. It stores info on decentralized nodes. Created by Juan Benet. CID is an identifier for an item in IPFS.
+
+Get NFT Info
+- new TokenNftInfoQuery().setNftId(nftId).execute(client)
+
+Transfer NFT
+- new TransferTransaction().addNFTTransfer(tokenId, tokenIdSerialNumber, treasuryId, toAccountId).freezeWith(client).sign(treasuryKey).execute(client)

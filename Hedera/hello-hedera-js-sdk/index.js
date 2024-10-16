@@ -4,7 +4,11 @@ const {
     AccountCreateTransaction, 
     AccountBalanceQuery, 
     Hbar, 
-    TransferTransaction 
+    TransferTransaction,
+    TokenCreateTransaction,
+    TokenType,
+    TokenSupplyType,
+    TokenAssociateTransaction
 } = require("@hashgraph/sdk");
 
 require('dotenv').config();
@@ -55,22 +59,76 @@ async function environmentSetup() {
     console.log("The new account ID is: " +newAccountId);
 
     //Verify the account balance
-    const accountBalance = await new AccountBalanceQuery()
-        .setAccountId(newAccountId)
-        .execute(client);
+    // const accountBalance = await new AccountBalanceQuery()
+    //     .setAccountId(newAccountId)
+    //     .execute(client);
 
-    console.log("The new account balance is: " +accountBalance.hbars.toTinybars() +" tinybar.");
+    // console.log("The new account balance is: " +accountBalance.hbars.toTinybars() +" tinybar.");
 
-    //Create the transfer transaction
-    const sendHbar = await new TransferTransaction()
-        .addHbarTransfer(myAccountId, Hbar.fromTinybars(-1000)) //Sending account
-        .addHbarTransfer(newAccountId, Hbar.fromTinybars(1000)) //Receiving account
-        .execute(client);
+    // //Create the transfer transaction
+    // const sendHbar = await new TransferTransaction()
+    //     .addHbarTransfer(myAccountId, Hbar.fromTinybars(-1000)) //Sending account
+    //     .addHbarTransfer(newAccountId, Hbar.fromTinybars(1000)) //Receiving account
+    //     .execute(client);
         
-    //Verify the transaction reached consensus
-    const transactionReceipt = await sendHbar.getReceipt(client);
-    console.log("The transfer transaction from my account to the new account was: " + transactionReceipt.status.toString());
+    // //Verify the transaction reached consensus
+    // const transactionReceipt = await sendHbar.getReceipt(client);
+    // console.log("The transfer transaction from my account to the new account was: " + transactionReceipt.status.toString());
+
+    const supplyKey = PrivateKey.generate();
+
+    // CREATE FUNGIBLE TOKEN (STABLECOIN)
+    let tokenCreateTx = await new TokenCreateTransaction()
+    .setTokenName("USD Bar")
+    .setTokenSymbol("USDB")
+    .setTokenType(TokenType.FungibleCommon)
+    .setDecimals(2)
+    .setInitialSupply(10000)
+    .setTreasuryAccountId(myAccountId)
+    .setSupplyType(TokenSupplyType.Infinite)
+    .setSupplyKey(supplyKey)
+    .freezeWith(client);
+
+    //SIGN WITH TREASURY KEY
+    let tokenCreateSign = await tokenCreateTx.sign(PrivateKey.fromStringECDSA(myPrivateKey));
+
+    //SUBMIT THE TRANSACTION
+    let tokenCreateSubmit = await tokenCreateSign.execute(client);
+
+    //GET THE TRANSACTION RECEIPT
+    let tokenCreateRx = await tokenCreateSubmit.getReceipt(client);
+
+    //GET THE TOKEN ID
+    let tokenId = tokenCreateRx.tokenId;
+
+    //LOG THE TOKEN ID TO THE CONSOLE
+    console.log(`- Created token with ID: ${tokenId} \n`);
+
+    //BALANCE CHECK
+    var balanceCheckTx = await new AccountBalanceQuery().setAccountId(myAccountId).execute(client);
+    console.log(`- My Account balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+    var balanceCheckTx = await new AccountBalanceQuery().setAccountId(newAccountId).execute(client);
+    console.log(`- New Account balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+
+    const transaction = await (await (await (await new TokenAssociateTransaction().setAccountId(newAccountId).setTokenIds([tokenId]).freezeWith(client)).sign(newAccountPrivateKey)).execute(client)).getReceipt(client);
+
+    const transactionStatus = transaction.status
+
+    console.log("Transaction of assoc.: "+ transactionStatus)
+
+    const transferTransaction = await ( await ( await ( await new TransferTransaction().addTokenTransfer(tokenId, myAccountId, -10).addTokenTransfer(tokenId, newAccountId, 10).freezeWith(client)).sign(PrivateKey.fromStringECDSA(myPrivateKey))).execute(client)).getReceipt(client)
+
+    const transferStatus = transferTransaction.status
+
+    console.log("Transfer Status: "+ transferStatus)
+
+    //BALANCE CHECK
+    var balanceCheckTx = await new AccountBalanceQuery().setAccountId(myAccountId).execute(client);
+    console.log(`- My Account balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+    var balanceCheckTx = await new AccountBalanceQuery().setAccountId(newAccountId).execute(client);
+    console.log(`- New Account balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
 
     
+
 }
 environmentSetup();
