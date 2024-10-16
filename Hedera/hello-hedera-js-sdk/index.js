@@ -14,6 +14,11 @@ async function environmentSetup() {
     //Grab your Hedera testnet account ID and private key from your .env file
     const myAccountId = process.env.MY_ACCOUNT_ID;
     const myPrivateKey = process.env.MY_PRIVATE_KEY;
+
+    //Create your local client
+    // const node = {"127.0.0.1:50211": new AccountId(3)};
+    // conconst node = {"127.0.0.1:50211": new AccountId(3)};
+    // const client = Client.forNetwork(node).setMirrorNetwork("127.0.0.1:5600");
     
     //Create your Hedera Testnet client
     const client = Client.forTestnet();

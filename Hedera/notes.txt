@@ -56,3 +56,78 @@ Transfer Hbar
 
 Allowance
 Allow other accounts to transfer HBAR
+
+Consensus service = Provides the ability for Hedera to provide a BFT consensus as to the order and validity of messages submitted to a topic and a consensus timestamp for those messages.
+
+Set a submit key => Topic becomes private since each message will need to be signed by the Submit Key.
+Can control who can submit messages to your topic(Enhances privacy) but data is still public as its in a public ledger.
+
+If there's no admin key on a topic, autoRenewAccount may not be on the topic, deleteTopic isn't allowed. Only change through updateTopic is to extend expirationTime.
+
+Create Topic:
+Create txn -> sign with the client operator and submit txn to a Hedera network, request txn receipt, get topic id
+
+CreateTransaction => new TopicCreateTransaction()
+
+Items you can add to your topic:
+Admin key = - Access control for update/deleteTopic.
+- Anyone can increase topic's expiration time regardkess of the adminKey.
+- If no adminKey updateTopic can only be used for topic time extension and deleteTopic is disallowed.
+
+Submit key = - Access control for submitMessage.
+- If unspecified all submissions are allowed.
+
+Topic memo = Short public memo for giving topic info.
+
+Auto Renew Account = - Optional account to be used at topic's expiration time to extend topic life. 
+- Topic lifetime will be extended to a maximum of the autoRenewPeriod or however long it can be extended using all funds in the account(whichever is smaller and if any extension is possible with funds)
+
+Auto Renew Period = - Initial topic lifetime and amount of time to attempt to extend the topic's lifetime automatically at topic's expiration if autoRenewAccount is configured.
+
+Submit Message:
+Subscribe message for a topic.(Sent to Consensus node)
+new TopicMessageSubmitTransaction({topicId: x, message: y})
+
+Methods:
+setTopicId(<l=topicId>), type=TopicId, required
+setMessage(<message>), type=string, byte[], ByteString
+
+Get Topic Messages:
+new TopicMessageQuery().setTopicId().setStartTime().subscribe()
+
+Methods:
+setTopicId(<l=topicId>), type=TopicId, required
+setStartTime(<startTime>), type=instant => Time to start subscribing to a topic's messages
+setEndTime(<endTime>), type=instant
+setLimit(<limit>), type=long => Number of messages to return
+subscribe(<client, onNext>), type=SubscriptionHandle, required
+
+Hedera Token service
+- HTS allows devs to create custom fungible and non-fungible tokens without knowledge of smart contracts
+- Customizable, fast, secure
+
+Create Fungible Token
+- Create a txn = new TokenCreateTransaction()
+- Set name*, symbol*, type(nft, fungible), Decimal(0 for nft), InitialSupply = setTokenName("nameIdentifier").setTokenSymbol("nameShortForm").setTokenType(TokenType.FungibleCommon).setDecimals().setInitialSupply()
+- Set treasuryAccountId*, account that holds initial supply = setTreasuryAccountId()
+- set supplyType(finite, infinite(TokenSupplyType.Infinite))
+- set supplyKey, key used for minting tokens
+- freezeWith(client);
+-- setAdminKey(), setKycKey(), setFreezeKey(), setWipeKey(), setPauseKey(), setFreezeDefault(), setExpirationTime(), setFeeSchedule(), setCustomFees(), setSupplyType(), setMaxSupply(), setTokenMemo(), setAutoRenewAccountId(), setAutoRenewPeriod()
+
+Token Fee
+- Fixed fee
+	-- Transfers a specified amount of the token to the specified collection account each time a token transfer is initiated.
+	-- Custom fee token doesn't depend on the amount of the token that's being transferred.
+	-- Fee can be collected in hbar or another fungible Hedera token, nft can't be used as a type to collect the fee.
+	-- Can set a custom fixed fee for both fungible and nft types.
+	
+- Fractional fee
+	-- Transfers the specified fraction of the total value of the tokens that are being transferred to the specified fee-collecting account and is applicable to fungible tokens only.
+	-- You can also impose min and max fee limits per transfer txn.
+	
+- Royalty fee
+	-- Fractional fee that's assessed each time the ownership of an NFT is transferred from a person to another and applicable to NFTs only.
+	-- Fee collector accountId defined in the royalty fee schedule will receive the fee each time.
+	-- The fee charged is a fraction of the value exchanged for the NFT.
+	-- If there's no value exchanged for the NFT, a fallback fee is used to charge the receiving account.
