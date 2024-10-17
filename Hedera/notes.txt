@@ -179,3 +179,29 @@ Get NFT Info
 
 Transfer NFT
 - new TransferTransaction().addNFTTransfer(tokenId, tokenIdSerialNumber, treasuryId, toAccountId).freezeWith(client).sign(treasuryKey).execute(client)
+
+
+TRADITIONAL Application
+User -> frontend -> Backend -> DB
+
+DECENTRALIZED Application
+
+User -> Frontend -> Backend -> DB	DB <- Backend <- Frontend <- User
+  |						|					 |					   |
+  |	Txn					|Subscribe/Query Data|				   Txn |
+  |						v					 v					   |
+  |_____________________    Hedera Network    _____________________|
+
+dApps = Digital apps/programs that exist and run on a blockchain or p2p network of computers instead of a single computer i.e aren't in the control of a single authority.
+
+Advantages
+- No req. trusted 3rd party to operate network.
+- Open and transparent, trusted
+- More robust
+- Users retain control of their data, ownership economy with no vendor lock in
+- Attack vector is distributed so lower risk
+
+Disadvantages
+- Scalability issues, consensus algo has huge overhead
+- Higher cost / txn
+- Immutability
