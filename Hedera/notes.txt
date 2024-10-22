@@ -242,3 +242,53 @@ InterOperability and Nft
 - InterOperability with other systems through HSCS and HTS.
 - Enables devs to create, transfer and exchange assets across different chains.
 - HSCS and HTS support working with tokens cross-chain.
+
+Need for Hashio -  Allow compatibility btwn Hedera, EVM and JSON-RPC
+- Enabling greater usability for devs building SC apps on hedera
+- Devs building on other EVM-based networks want to use the same tools and services that they are most familiar with. Hedera mainnet doesnt understand the ethereum txn body natively.
+- Most evm-based libraries, tools and workflows across web3 ecosystems are based on the JSON-RPC spec.
+
+Hashio
+- Open source project that attempts to bridge the gap so that Hedera smart contracts can be accessed using a familiar interface for devs.
+- Hosted instance of Json-RPC-Relay project
+- Makes it easier to move from Ethereum to Hedera by:
+	-- Enabling smart contract devs to use wallets like metamask and tools and libs like ether.js, web3.js
+	-- Allowing retail users to use familiar wallets to send and receive tokens and interact with dApps.
+
+Alias updates and ecdsa support
+- Keys on the account: ECDSA vs ED
+- Use cases:
+	-- Ethereum public address = Eth uses public address as accountId
+	-- ECRecover = ECDSA sign verification method built in Solidity ecosys.
+	-- Token assoc = To send and receive a token on eth, sender only needs to know eth address of the recipient.
+	-- In Hedera such a txn must be performed using the Hedera entity id / hedera alias for that entity and the recipient must assoc. the token to their account before the transfer can succeed.
+	-- Auto account creation and alias mapping = Account creation in Eth is free and no concept of a separate accountId
+
+- Capabilities to be implemented
+	-- For each entity, option to attribute ECDSA key in addition to existing ED key.
+	-- Derivation of alias from ECDSA key and be equivaent to eth address.
+	-- Enable setting of an alias through cryptocreate.
+	-- For existing entities, enable CryptoUpdate to set the alias to eth address. In case of ED key, use HIP-32 variant of alias for the account.
+	-- Remove the requirement of immutability of alias and permit alias to correspond to the rotated key.
+
+Impact to users
+- Impact to Metamask / Ethereum users
+	-- Barrier of entry for metamask users to participate in Hedera ecosys is lowered.
+	-- Metamask users can start sending / receiving Hbar to their eth public address in Metamask via JSON-RPC Relay.
+	-- Eth users can start experimenting with Hedera with their familiar wallet.
+- Impact to current Hedera Users
+	-- Current Hedera users will have the ability to add/update their aliases to use an eth address as their account alias.
+	-- They'll have the ability to send/receive via the alias and can also use their current account to interact with dApps.
+
+HIP-482: JSON RPC Relay, Status = Accepted, Type = Standard-Application
+- This defines a HIP-410 EthereumTransaction relay that implements the Ethereum JSON-RPC APIs by forwarding Eth txns to the consensus nodes and querying the mirror nodes.
+- It defines how such a relay can be implemented to make Hedera appear as an eth compatible chain to standard eth tools and apps.
+
+Token Association
+- Hedera accounts must be assoc. with an Ft or nft first before you can transfer tokens to that account
+- Helps prevent spam being received as it requires an opt-in to receive a token.
+- When one transfers a custom Ft or nft to the alias accountId, the token assoc. step is skipped and the account will be automaticallybe assoc with the token upon creation.
+- In the case of nft, once an account is assoc, it can hold any number of nfts of that token type. The hedera acc. that's assoc with a token is req. to sign the txn.
+
+Assoc. Token Txn
+- new TokenAssociateTransaction().setAccountId(accountId).setTokenIds([tokenId]).freezeWith(client).sign(accountKey).execute(client)
