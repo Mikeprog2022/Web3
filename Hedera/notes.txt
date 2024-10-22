@@ -205,3 +205,40 @@ Disadvantages
 - Scalability issues, consensus algo has huge overhead
 - Higher cost / txn
 - Immutability
+
+Hedera Smart Contract Service
+- Solidity Smart Contract Language
+	-- Object oriented, high lvl language for implementing smart contracts(programs that govern the behavior of accounts within the ethereum state)
+	-- Curly bracket language designed to target Ethereum Virtual Machine. Influenced by cpp, python, js
+	-- Solidity is the lang for smart contracts on hedera
+	
+- Compile Solidity into bytecode
+	-- solcjs --bin simple_storage.sol = ABI file
+	-- Compiles the sc by default into Application Binary Interface and byte code
+		--- ABI = Enables a bridge between smart contracts and web apps using high level langs like js and the byte code that the evm understands
+		--- Byte code = exe form of the smart contract stored in binary format
+		
+- Create Smart contract
+	-- new ContractCreateFlow().setGas().setBytecode(bytecode).execute(client)
+
+- Update Smart Contract
+	-- new ContractUpdateTransaction().setContractId(contractId).setAdminKey(adminKey).setMaxTransactionFee().freezeWith(client).sign(newAdminKey).sign(adminKey).execute(client).getReceipt(client)
+	
+- Delete Smart Contract
+	-- new ContractDeleteTransaction().setContractId(contractId).freezeWith(client).sign(adminKey).execute(client)
+	
+- Call a smart contract
+	-- new ContractExecuteTransaction().setContractId(newContractId).setGas().setFunction("",new ContractFunctionParameters().addString("")).execute(client)
+	
+- Query a SC
+	-- new ContractCallQuery().setContractId(contractId).setGas().setFunction("").execute(client)
+	
+InterOperability on distributed ledgers
+- Ability to connect and communicate with other distributed ledger networks, creating a pathway to the easy exchange of assets. Power of communication btwn systems
+- Its protocol allows a distributed ledger to reaad and write messages to other networks, easily exchanging data, like between 2 DLTs.
+
+InterOperability and Nft
+- Seamless integration and collaboration with other blockchain networks and platforms
+- InterOperability with other systems through HSCS and HTS.
+- Enables devs to create, transfer and exchange assets across different chains.
+- HSCS and HTS support working with tokens cross-chain.
